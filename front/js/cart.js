@@ -97,3 +97,37 @@ const calculateTotalPrice = () => {
 };
 
 renderCartItems();
+
+const orderForm = document.getElementById("orderForm");
+
+orderForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  // Get the form data
+  const formData = new FormData(orderForm);
+
+  // Send the form data to the server
+  fetch("http://localhost:3000/api/orders", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Generate a unique order ID
+      const orderID = Math.floor(Math.random() * 10000000000);
+
+      // Store the order ID in the browser's local storage
+      localStorage.setItem('orderID', orderID);
+
+      // Redirect to the confirmation page
+      window.location.href = './confirmation.html';
+    })
+    .catch((error) => {
+      console.error("There was an error sending the form data", error);
+    });
+});
