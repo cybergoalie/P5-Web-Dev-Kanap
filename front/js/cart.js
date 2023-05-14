@@ -140,7 +140,7 @@ formData.append("product",products.map((p) => p.id));
       localStorage.setItem('orderID', orderID);
 
       // Redirect to the confirmation page
-      window.location.href = './confirmation.html';
+      window.location.href = '../html/confirmation.html';
     })
     .catch((error) => {
       console.error("There was an error sending the form data", error);
