@@ -41,14 +41,17 @@ const getArticle = () => {
     })
     .then(function (data) {
         console.log(data); 
-        const addTitle = (document.getElementById("title").innerHTML=data.name)
-        const addPrice = (document.getElementById("price").innerHTML=data.price)
+        //const addTitle = (document.getElementById("title").innerHTML=data.name) = the following two lines are the correct way to convey this expression, initiating then manipulating the dom object; repeat with 47
+        const addTitle = document.getElementById("title")
+        addTitle.innerHTML=data.name
+        //const addPrice = (document.getElementById("price").innerHTML=data.price) better to use the following
+        document.getElementById("price").innerHTML=data.price
         const addImg = document.createElement("img")
         document.querySelector(".item__img").appendChild(addImg)
         addImg.setAttribute("src", `${data.imageUrl}`)
 
 
-        const addDescription = (document.getElementById("description").innerHTML = data.description)
+        document.getElementById("description").innerHTML = data.description
         const addOption = document.getElementById("colors")
         for (color in data.colors) {
             addOption.innerHTML += `<option value="${data.colors[color]}">${data.colors[color]}</option>`

@@ -1,6 +1,11 @@
 const http = require('http');
 const app = require('./app');
-
+/**
+ * Normalize a port into a number, string, or false.
+ *
+ * @param {string} val - The port value to normalize.
+ * @returns {(number|string|boolean)} - The normalized port value.
+ */
 const normalizePort = val => {
   const port = parseInt(val, 10);
 
@@ -12,9 +17,18 @@ const normalizePort = val => {
   }
   return false;
 };
+
+// Normalize the port value
 const port = normalizePort(process.env.PORT || '3000');
+
+// Set the port value in the app
 app.set('port', port);
 
+/**
+ * Event listener for HTTP server "error" event.
+ *
+ * @param {Error} error - The error object.
+ */
 const errorHandler = error => {
   if (error.syscall !== 'listen') {
     throw error;
@@ -33,8 +47,10 @@ const errorHandler = error => {
   }
 };
 
+// Create the HTTP server
 const server = http.createServer(app);
 
+// Add error and listening event handlers
 server.on('error', errorHandler);
 server.on('listening', () => {
   const address = server.address();
@@ -42,4 +58,5 @@ server.on('listening', () => {
   console.log('Listening on ' + bind);
 });
 
+// Listen on the specified port
 server.listen(port);

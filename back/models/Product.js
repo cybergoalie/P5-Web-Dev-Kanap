@@ -1,3 +1,19 @@
+/**
+ * Represents a product.
+ * @typedef {Object} Product
+ * @property {string[]} colors - The available colors for the product.
+ * @property {string} _id - The unique identifier for the product.
+ * @property {string} name - The name of the product.
+ * @property {number} price - The price of the product.
+ * @property {string} imageUrl - The URL of the image for the product.
+ * @property {string} description - The description of the product.
+ * @property {string} altTxt - The alt text for the product image.
+ */
+
+/** 
+ * An array of products.
+ * @type {Product[]}
+ */
 const products = [
   {
     "colors": ["Blue", "White", "Black"],
@@ -72,11 +88,20 @@ const products = [
     "altTxt": "Photo of a pink sofa, three seats"
   }
 ];
-
+/**
+ * Retrieves all products.
+ * @function
+ * @returns {Promise<Product[]>} A promise that resolves to an array of all products.
+ */
 exports.find = () => {
   return new Promise((resolve, reject) => resolve(JSON.parse(JSON.stringify(products))));
 }
-
+/**
+ * Retrieves a product by ID.
+ * @function
+ * @param {string} id - The ID of the product to retrieve.
+ * @returns {Promise<Product>} A promise that resolves to the product with the specified ID.
+ */
 exports.findById = (id) => {
   return new Promise((resolve, reject) =>
     resolve(JSON.parse(JSON.stringify(products)).find(product =>

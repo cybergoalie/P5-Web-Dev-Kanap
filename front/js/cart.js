@@ -3,6 +3,8 @@
  * @type {Array<{quantity: string, color: string, id: string}>}
  */
 const products = JSON.parse(localStorage.getItem("addToCart"));
+console.log(products)
+
 
 /**
  * The container element for the shopping cart.
@@ -48,7 +50,7 @@ const renderCartItems = () => {
               <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
             </div>
             <div class="cart__item__content__settings__delete">
-              <p class="deleteItem">Supprimer</p>
+              <p class="deleteItem">Delete</p>
             </div>
           </div>
         </div>
@@ -98,13 +100,26 @@ const calculateTotalPrice = () => {
 
 renderCartItems();
 
-const orderForm = document.getElementById("orderForm");
+const orderForm = document.getElementsByClassName("cart__order__form")[0];
 
 orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   // Get the form data
   const formData = new FormData(orderForm);
+  const contact = {
+    firstName: document.getElementById('firstName'),
+    lastName: document.getElementById('lastName'),
+    address: document.getElementById('address'),
+    city: document.getElementById('city'),
+    email: document.getElementById('email'),
+}
+
+formData.append("contact",contact);
+formData.append("product",products.map((p) => p.id));
+
+
+  console.log(formData)
 
   // Send the form data to the server
   fetch("http://localhost:3000/api/orders", {
@@ -131,3 +146,4 @@ orderForm.addEventListener("submit", (event) => {
       console.error("There was an error sending the form data", error);
     });
 });
+
