@@ -75,20 +75,21 @@ const addToCart = document.getElementById("addToCart");
  * The click event listener for the "Add to Cart" button that adds the selected product to the cart.
  * @function
  * @returns {void}
- */
-addToCart.addEventListener("click", () => {
-   /**
-   * The object that represents the product to be added to the cart.
+ *then,
+   * Create an object that represents the product to be added to the cart.
    * @type {object}
    * @property {number} quantity - The quantity of the product to be added to the cart.
    * @property {string} color - The color of the product to be added to the cart.
    * @property {string|null} id - The ID of the product to be added to the cart.
    */
-  const addProduct = {
-    quantity: document.getElementById("quantity").value,
+addToCart.addEventListener("click", () => {
+  const addProduct = {    
     color: document.getElementById("colors").value,
+    quantity: document.getElementById("quantity").value,
     id: id
   };
+  alert("Your item has been added to the cart! When you are ready to purchase your order, click on the Cart tab above.");
+
 /**
  * Store the selected product with its details to the local storage.
  * @param {Object} addProduct - The object representing the selected product with its details.

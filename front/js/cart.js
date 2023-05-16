@@ -5,48 +5,57 @@
 const products = JSON.parse(localStorage.getItem("addToCart"));
 console.log(products)
 
-
 /**
  * The container element for the shopping cart.
  * @type {HTMLElement}
  */
 const cartContainer = document.getElementById("cart__items");
-
+console.log(cartContainer)
 /**
  * The total price element.
  * @type {HTMLElement}
  */
 const totalPrice = document.getElementById("totalPrice");
-
+console.log(totalPrice)
 /**
  * Renders the shopping cart items.
  * @function renderCartItems
  * @returns {void}
  */
 const renderCartItems = () => {
-  // Clear previous content
+/**
+ * Clears the content of the cart container.
+ */
   cartContainer.innerHTML = "";
 
-  // Iterate through products and add them to the cart
-  products.forEach((product) => {
+  // products.forEach((product) => { 
+  //   OR
+const productFetches = products.map((product) =>
     fetch(`http://localhost:3000/api/products/${product.id}`)
       .then((res) => res.json())
-      .then((data) => {
-        const item = document.createElement("div");
-        item.classList.add("cart__item");
+);
+
+Promise.all(productFetches)
+  .then((data) => {
+    // Iterate through products and add them to the cart
+    products.forEach((product, index) => {
+      const item = document.createElement("div");
+      item.classList.add("cart__item");
+      item.dataset.id = product.id;
+        item.dataset.color = product.color;
         item.innerHTML = `
         <div class="cart__item__img">
-          <img src="${data.imageUrl}" alt="${data.altTxt}">
+          <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
         </div>
         <div class="cart__item__content">
           <div class="cart__item__content__titlePrice">
-            <h2>${data.name}</h2>
+            <h2>${data[index].name}</h2>
             <p>${product.color}</p>
-            <p>${data.price / 100}€</p>
+            <p>${data[index].price / 100}€</p>
           </div>
           <div class="cart__item__content__settings">
             <div class="cart__item__content__settings__quantity">
-              <p>Qté : </p>
+              <p>Quantity : </p>
               <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
             </div>
             <div class="cart__item__content__settings__delete">
@@ -56,6 +65,14 @@ const renderCartItems = () => {
         </div>
       `;
         cartContainer.appendChild(item);
+        
+        // Add event listener to change quantity
+        const itemQuantity = item.querySelector(".itemQuantity");
+        itemQuantity.addEventListener("change", () => {
+          product.quantity = itemQuantity.value;
+          localStorage.setItem("addToCart", JSON.stringify(products));
+          calculateTotalPrice();
+        });
 
         // Add event listener to delete item
         const deleteItem = item.querySelector(".deleteItem");
@@ -67,17 +84,12 @@ const renderCartItems = () => {
           calculateTotalPrice();
         });
 
-        // Add event listener to change quantity
-        const itemQuantity = item.querySelector(".itemQuantity");
-        itemQuantity.addEventListener("change", () => {
-          product.quantity = itemQuantity.value;
-          localStorage.setItem("addToCart", JSON.stringify(products));
-          calculateTotalPrice();
-        });
-
         // Calculate the total price
         calculateTotalPrice();
       });
+  })
+  .catch((error) => {
+    console.error("Error fetching product data:", error);
   });
 };
 
@@ -88,62 +100,22 @@ const renderCartItems = () => {
  */
 const calculateTotalPrice = () => {
   let total = 0;
-  products.forEach((product) => {
+
+  //Fetch product data for all items
+  const productFetches = products.map((product) =>
     fetch(`http://localhost:3000/api/products/${product.id}`)
       .then((res) => res.json())
+  );
+  Promise.all(productFetches)
       .then((data) => {
-        total += data.price * product.quantity;
+        data.forEach((product, index) => {
+        total += product.price * products[index].quantity;
+        });
         totalPrice.innerText = `${total / 100}€`;
+      })
+      .catch((error) => {
+        console.error("Error fetching product data:", error);
       });
-  });
 };
 
 renderCartItems();
-
-const orderForm = document.getElementsByClassName("cart__order__form")[0];
-
-orderForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  // Get the form data
-  const formData = new FormData(orderForm);
-  const contact = {
-    firstName: document.getElementById('firstName'),
-    lastName: document.getElementById('lastName'),
-    address: document.getElementById('address'),
-    city: document.getElementById('city'),
-    email: document.getElementById('email'),
-}
-
-formData.append("contact",contact);
-formData.append("product",products.map((p) => p.id));
-
-
-  console.log(formData)
-
-  // Send the form data to the server
-  fetch("http://localhost:3000/api/orders", {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      // Generate a unique order ID
-      const orderID = Math.floor(Math.random() * 10000000000);
-
-      // Store the order ID in the browser's local storage
-      localStorage.setItem('orderID', orderID);
-
-      // Redirect to the confirmation page
-      window.location.href = '../html/confirmation.html';
-    })
-    .catch((error) => {
-      console.error("There was an error sending the form data", error);
-    });
-});
-
