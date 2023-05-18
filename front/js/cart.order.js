@@ -1,3 +1,64 @@
+// Define the contact object with references to each input element
+const contact = {
+    firstName: document.getElementById('firstName'),
+    lastName: document.getElementById('lastName'),
+    address: document.getElementById('address'),
+    city: document.getElementById('city'),
+    email: document.getElementById('email'),
+};
+
+// Validate and style the input fields
+function validateInput(input, regex, errorMessage) {
+    if (input.value.match(regex)) {
+        input.style.backgroundColor = 'lightgreen';
+        input.style.borderColor = '#ccc';
+        input.setCustomValidity('');
+    } else {
+        input.style.backgroundColor = 'pink';
+        input.style.borderColor = 'red';
+        input.setCustomValidity(errorMessage);
+    }
+}
+// Validate and style the first name input 
+const firstNameInput = contact.firstName;
+const firstNameRegex = /^[a-zA-Z ]{2,30}$/;
+const firstNameErrorMessage = 'Please enter a valid first name (2-30 alphabetic characters)';
+contact.firstName.addEventListener("change", (event) => {
+    validateInput(firstNameInput, firstNameRegex, firstNameErrorMessage);
+});
+
+// Validate and style the last name input
+const lastNameInput = contact.lastName;
+const lastNameRegex = /^[a-zA-Z ]{2,30}$/;
+const lastNameErrorMessage = 'Please enter a valid last name (2-30 alphabetic characters)';
+contact.lastName.addEventListener("change", (event) => {
+    validateInput(lastNameInput, lastNameRegex, lastNameErrorMessage);
+});
+
+// Validate and style the address input
+const addressInput = contact.address;
+const addressRegex = /^[a-zA-Z0-9 ]{5,50}$/;
+const addressErrorMessage = 'Please enter a valid address (5-50 alphanumeric characters)';
+contact.address.addEventListener("change", (event) => {
+    validateInput(addressInput, addressRegex, addressErrorMessage);
+});
+
+// Validate and style the city input
+const cityInput = contact.city;
+const cityRegex = /^[a-zA-Z ]{2,30}$/;
+const cityErrorMessage = 'Please enter a valid city name (2-30 alphabetic characters)';
+contact.city.addEventListener("change", (event) => {
+    validateInput(cityInput, cityRegex, cityErrorMessage);
+});
+
+// Validate and style the email input
+const emailInput = contact.email;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailErrorMessage = 'Please enter a valid email address in the format "example@domain.com"';
+contact.email.addEventListener("change", (event) => {
+    validateInput(emailInput, emailRegex, emailErrorMessage);
+});
+
 // FOLLOWING IS A FUNCTION TO CREATE THE ORDER FORM, (A SIMPLE APPROACH THAT ASSUMES THERE ARE NO OTHER ELEMENTS THAT MIGHT INTERFERE WITH THE PLACEMENT OR STYLING OF THE FORM, appending it directly below the body):
 
 // const orderForm = document.createElement('form');
@@ -23,120 +84,47 @@
 // formData.append("product",products.map((p) => p.id));
 
 // OR the method below creates a new formData object and appends the form data to it manually; this gives you more control over what data is included and how it is formatted, but requires more code to be written:
-  // Create a new FormData object and populate it with the form data from orderForm
+// Create a new FormData object and populate it with the form data from orderForm
+
+// PART 2: DEFINITION OF THE ORDER FORM AND FORM SUBMISSION
 const orderForm = document.getElementsByClassName("cart__order__form")[0];
 orderForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-//Get form input values
-const formData = new FormData(orderForm);
-  console.log(formData);
+    event.preventDefault();
+    
+    //Get form input values
+    const formData = new FormData(orderForm);
+    console.log(formData);
+    console.log(formData.get('firstName'));
+    console.log(formData.get('lastName'));
+    console.log(formData.get('address'));
+    console.log(formData.get('city'));
+    console.log(formData.get('email'));
 
+    // Send the form data to the server
+    fetch("http://localhost:3000/api/products/order", {
+        method: "POST",
+        body: formData,
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Network response was not ok");
+            }
+        })
 
-  
-  console.log(formData.get('firstName'));
-  console.log(formData.get('lastName'));
-  console.log(formData.get('address'));
-  console.log(formData.get('city'));
-  console.log(formData.get('email'));
-  
-// Send the form data to the server
-fetch("http://localhost:3000/api/orders", {
-  method: "POST",
-  body: formData,
-})
-.then(response => {
-  if (response.ok) {
-    return response.json();
-  } else {
-    throw new Error("Network response was not ok");
-  }
-})
+        // Generate a unique order ID, Store the order ID in the browser's local storage, Redirect to the confirmation page
+        .then(data => {
+            // Generate a unique order ID
+            const orderID = Math.floor(Math.random() * 10000000000);
+            // Store the order ID in the browser's local storage
+            localStorage.setItem("orderID", orderID);
 
-// Generate a unique order ID, Store the order ID in the browser's local storage, Redirect to the confirmation page
-.then(data => {
-  const orderID = Math.floor(Math.random() * 10000000000);
-  localStorage.setItem('orderID', orderID);
-  const confirmationMessage = "Your order has been successfully submitted!";
-  window.location.href = `../html/confirmation.html?orderID=${orderID}&message=${confirmationMessage}`;
-})
-.catch(error => {
-  console.error("There was an error submitting the order", error);
-  alert("Error submitting order");
+            const confirmationMessage = "Your order has been successfully submitted!";
+            window.location.href = `./confirmation.html?orderID=${orderID}&message=${confirmationMessage}`;
+        })
+        .catch(error => {
+            console.error("There was an error submitting the order", error);
+            alert("Error submitting order");
+        });
 });
-
-
-
-console.log(formData)
-
-// Define the contact object with references to each input element
-const contact = {
-  firstName: document.getElementById('firstName'),
-  lastName: document.getElementById('lastName'),
-  address: document.getElementById('address'),
-  city: document.getElementById('city'),
-  email: document.getElementById('email'),
-};
-
-// Validate and style the first name input 
-const firstNameInput = contact.firstName;
-if (formData.get('firstName').match(/^[a-zA-Z ]{2,30}$/)) {
-  firstNameInput.style.backgroundColor = 'lightgreen';
-  firstNameInput.style.borderColor = '#ccc';
-} else {
-  // If the input value does not match the regex, set the background color to pink and the border color to red
-  firstNameInput.style.backgroundColor = 'pink';
-  firstNameInput.style.borderColor = 'red';
-  // Set the custom validity error message to explain the validation parameters
-  firstNameInput.setCustomValidity('Please enter a valid first name (2-30 alphabetic characters)');
-};
-
-// Validate and style the last name input
-const lastNameInput = contact.lastName;
-if (formData.get('lastName').match(/^[a-zA-Z ]{2,30}$/)) {
-  lastNameInput.style.backgroundColor = 'lightgreen';
-  lastNameInput.style.borderColor = '#ccc';
-} else {
-  // If the input value does not match the regex, set the background color to pink and the border color to red
-  lastNameInput.style.backgroundColor = 'pink';
-  lastNameInput.style.borderColor = 'red';
-  // Set the custom validity error message to explain the validation parameters
-  lastNameInput.setCustomValidity('Please enter a valid last name (2-30 alphabetic characters)');
-}
-
-// Validate and style the address input
-const addressInput = contact.address;
-if (formData.get('address').match(/^[a-zA-Z0-9 ]{5,50}$/)) {
-  addressInput.style.backgroundColor = 'lightgreen';
-  addressInput.style.borderColor = '#ccc';
-} else {
-  // If the input value does not match the regex, set the background color to pink and the border color to red
-  addressInput.style.backgroundColor = 'pink';
-  addressInput.style.borderColor = 'red';
-  // Set the custom validity error message to explain the validation parameters
-  addressInput.setCustomValidity('Please enter a valid address (5-50 alphanumeric characters)');
-}
-
-// Validate and style the city input
-const cityInput = contact.city;
-if (formData.get('city').match(/^[a-zA-Z ]{2,30}$/)) {
-  cityInput.style.backgroundColor = 'lightgreen';
-  cityInput.style.borderColor = '#ccc';
-} else {
-  // If the input value does not match the regex, set the background color to pink and the border color to red
-  cityInput.style.backgroundColor = 'pink';
-  cityInput.style.borderColor = 'red';
-  // Set the custom validity error message to explain the validation parameters
-  cityInput.setCustomValidity('Please enter a valid city name (2-30 alphabetic characters)');
-}
-
-// Validate and style the email input
-const emailInput = contact.email;
-if (formData.get('email').match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-  emailInput.style.backgroundColor = 'lightgreen';
-  emailInput.style.borderColor = '#ccc';
-  emailInput.setCustomValidity('');
-} else {
-  emailInput.style.backgroundColor = 'pink';
-  emailInput.style.borderColor = 'red';
-  emailInput.setCustomValidity('Please enter a valid email address in the format "example@domain.com"');
-}

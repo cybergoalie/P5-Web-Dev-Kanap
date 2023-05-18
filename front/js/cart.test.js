@@ -1,3 +1,14 @@
+const { JSDOM } = require('jsdom');
+
+// Create a virtual DOM environment
+const dom = new JSDOM('<!doctype html><html><body></body></html>');
+
+// Set the global objects like document and window
+global.document = dom.window.document;
+global.window = dom.window;
+
+require('./localStorageMock.js');
+
 const {Cart}= require('./cart')
   
   /**
