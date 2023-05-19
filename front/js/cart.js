@@ -18,7 +18,6 @@ let cartContainer;
 let totalPrice;
 
 //PART 2: RETRIEVAL OF CART DATA FROM LOCAL STORAGE AND PARSING IT AS JSON
-// This if code is used to check if the `document` object is defined before accessing it. It will now only execute the code inside the if block if the document object is defined (by both the value and the data type), which means it's running in a browser environment. If you run this code in Node.js, where the document object is not available, it will skip the code inside the if block and avoid the ReferenceError.
 if (typeof localStorage !== 'undefined') {
   //Retrieves the cart daata from the `localStorage` using the key "addToCart" and assigns it to the `cartData` variable.
   const cartData = localStorage.getItem("addToCart");
@@ -67,11 +66,11 @@ const renderCartItems = () => {
         quantity: Number(product.quantity),
       };
     };
+    console.log(groupedProducts);
     // Increment the cart total quantity by the product quantity
     cartTotalQuantity += product.quantity;
   });
-  console.log(groupedProducts);
-  // Update the total quantity element
+  //Update the total quantity element
   totalQuantity.innerHTML = cartTotalQuantity;
 
   /**
@@ -95,50 +94,62 @@ const renderCartItems = () => {
           item.dataset.id = product.id;
           item.dataset.color = product.color;
           item.innerHTML = `
-          <div class="cart__item__img">
-            <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
-          </div>
-          <div class="cart__item__content">
-            <div class="cart__item__content__titlePrice">
-              <h2>${data[index].name}</h2>
-              <p>${product.color}</p>
-              <p>${data[index].price / 100}</p>
+            <div class="cart__item__img">
+              <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
             </div>
-            <div class="cart__item__content__settings">
-              <div class="cart__item__content__settings__quantity">
-                <p>Quantity : </p>
-                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
+            <div class="cart__item__content">
+              <div class="cart__item__content__titlePrice">
+                <h2>${data[index].name}</h2>
+                <p>${product.color}</p>
+                <p>${data[index].price / 100}</p>
               </div>
-              <div class="cart__item__content__settings__delete">
-                <p class="deleteItem">Delete</p>
+              <div class="cart__item__content__settings">
+                <div class="cart__item__content__settings__quantity">
+                  <p>Quantity : </p>
+                  <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
+                </div>
+                <div class="cart__item__content__settings__delete">
+                  <p class="deleteItem">Delete</p>
+                </div>
               </div>
             </div>
-          </div>
-        `;
+          `;
           cartContainer.appendChild(item);
 
           // Add event listener to change quantity
           const itemQuantity = item.querySelector(".itemQuantity");
           itemQuantity.addEventListener("change", (event) => {
             const newQuantity = Number(itemQuantity.value);
+            // Update the quantity in the groupedProducts object
             groupedProducts[`${product.model}-${product.color}`].quantity = newQuantity;
+            // Update the quantity in the products array
             products.forEach((product) => {
               if (product.id === item.dataset.id && product.color === item.dataset.color) {
                 product.quantity = newQuantity;
               }
             });
+            // Update the total quantity element
+            totalQuantity.innerHTML = calculateTotalQuantity();
+            // Update the local storage
             localStorage.setItem("addToCart", JSON.stringify(products));
+            // Calculate and display the total price
             calculateTotalPrice();
           });
 
           // Add event listener to delete item
           const deleteItem = item.querySelector(".deleteItem");
-          deleteItem.addEventListener("click", () => {
-            const index = products.findIndex((product) => product.id === id && product.color === color);
-            products.splice(index, 1);
-            localStorage.setItem("addToCart", JSON.stringify(products));
-            renderCartItems();
-            calculateTotalPrice();
+          deleteItem.addEventListener("click", (event) => {
+            const deleteButton = event.target;
+            const product = deleteButton.closest('.cart__item');
+            if (product) {
+              const productId = product.getAttribute('data-id');
+              const productColor = product.getAttribute('data-color');
+              const index = products.findIndex((product) => product.id === productId && product.color === productColor);
+              products.splice(index, 1);
+              localStorage.setItem("addToCart", JSON.stringify(products));
+              renderCartItems();
+              calculateTotalPrice();
+            };
           });
 
           //Calls the `calculateTotalPrice` function to calculate and display the total price.
@@ -151,7 +162,17 @@ const renderCartItems = () => {
     });
 };
 
-//PART 5: DEFINE THE `CALCULATETOTALPRICE` FUNCTION
+//PART 5: DEFINE THE `CALCULATETOTALQUANTITY` FUNCTION
+const calculateTotalQuantity = () => {
+  let totalQuantity = 0;
+  // Iterate through products and sum up the quantities
+  products.forEach((product) => {
+    totalQuantity += product.quantity;
+  });
+  return totalQuantity;
+};
+
+//PART 6: DEFINE THE `CALCULATETOTALPRICE` FUNCTION
 /**
  * Calculates and displays the total price.
  * @function calculateTotalPrice
@@ -170,12 +191,12 @@ const calculateTotalPrice = () => {
       data.forEach((product, index) => {
         total += product.price * products[index].quantity;
       });
-      totalPrice.innerText = `${total / 100}`;
+      totalPrice.innerText = `${(total / 100).toFixed(2)}`; // Format the total price with two decimal places
     })
     .catch((error) => {
       console.error("Error fetching product data:", error);
     });
 };
-//PART 6: INVOCATION OF `RENDERCARTITEMS` FUNTION TO RENDER THE CART ITEMS ON THE PAGE
+//PART 7: INVOCATION OF `RENDERCARTITEMS` FUNCTION TO RENDER THE CART ITEMS ON THE PAGE
 //Calls the `renderCartItems` function to render the cart items on the page.
 renderCartItems();
