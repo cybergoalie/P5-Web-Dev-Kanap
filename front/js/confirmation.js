@@ -1,14 +1,14 @@
 // Retrieve the order ID from the browser's local storage
-const orderID = localStorage.getItem('orderID');
+const orderId = localStorage.getItem('orderId');
 
 // Display the order ID on the confirmation page
-document.getElementById('orderId').innerText = orderID;
+document.getElementById('orderId').innerText = orderId;
 
 // Get the order details from the server
 const urlParams = new URLSearchParams(window.location.search);
-const orderId = urlParams.get('orderId');
+const orderIdParam = urlParams.get('orderId');
 
-fetch(`http://localhost:3000/api/orders/${orderId}`)
+fetch(`http://localhost:3000/api/products/order/${orderId}`)
   .then((response) => {
     if (!response.ok) {
       throw new Error('Network response was not ok');

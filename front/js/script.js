@@ -70,6 +70,7 @@ const getArticles = () => {
         //       </a>`;
         //   });
         //   container.innerHTML = productHtml.join('');
+
         //   OR using another version of for...of loop and `+=`:
         //   let productHtml = '';
         //   for (const product of data) {
@@ -84,6 +85,7 @@ const getArticles = () => {
         //     `;
         //   }
         //  container.innerHTML = productHtml; 
+
             // OR using `Array.map()` and `join()`:
             // const productHtml = data.map(product => `
             //   <a href="./product.html?id=${product._id}">
@@ -95,6 +97,7 @@ const getArticles = () => {
             //   </a>
             // `).join('');
             // container.innerHTML = productHtml;
+
             // OR use a for loop with `data.length` and `+=`:
             // const productHtml = data.map(product => `
             //   <a href="./product.html?id=${product._id}">
@@ -106,6 +109,7 @@ const getArticles = () => {
             //   </a>
             // `).join('');
             // container.innerHTML = productHtml;
+            
             //  OR another for...of loop:  
         
         for (const product of data) {
@@ -122,5 +126,4 @@ const getArticles = () => {
     })
 }
 
-
-getArticles()
+getArticles();

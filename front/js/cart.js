@@ -16,6 +16,8 @@ let cartContainer;
  * @type {HTMLElement}
  */
 let totalPrice;
+let totalQuantityElement; //Rename the global variable to avoid confusion
+let filteredProducts = []; // Declare filteredProducts at the global
 
 //PART 2: RETRIEVAL OF CART DATA FROM LOCAL STORAGE AND PARSING IT AS JSON
 if (typeof localStorage !== 'undefined') {
@@ -38,8 +40,8 @@ if (typeof document !== 'undefined') {
   totalPrice = document.getElementById("totalPrice");
   console.log(totalPrice);
   //Retrieves/Gets the DOM element with the ID "totalQuantity" and assigns it to the `totalQuantity` variable.
-  totalQuantity = document.getElementById("totalQuantity");
-  console.log(totalQuantity);
+  totalQuantityElement = document.getElementById("totalQuantity");
+  console.log(totalQuantityElement);
 };
 
 //PART 4: DEFINE THE `RENDERCARTITEMS` FUNCTION
@@ -55,44 +57,60 @@ const renderCartItems = () => {
 
   // Iterate through products and group them by model and color
   products.forEach((product) => {
-    const key = `${product.model}-${product.color}`;
+    const key = `${product.id}-${product.color}`;
     if (groupedProducts[key]) {
       // Product with the same model and color already exists, adjust the quantity
       groupedProducts[key].quantity += Number(product.quantity);
     } else {
       // New product with unique model and color, add it to the groupedProducts object
       groupedProducts[key] = {
-        ...product,
+        ...product, // `...` is a spread operator used to create a new object that combines the properties of an existing `product` object with an additional property `quantity`
         quantity: Number(product.quantity),
       };
-    };
+    }
     console.log(groupedProducts);
     // Increment the cart total quantity by the product quantity
     cartTotalQuantity += product.quantity;
   });
   //Update the total quantity element
-  totalQuantity.innerHTML = cartTotalQuantity;
-
+  totalQuantityElement.innerHTML = calculateTotalQuantity(filteredProducts);
   /**
   * Clears the content of the cart container.
   */
   cartContainer.innerHTML = "";
-
   const productFetches = Object.values(groupedProducts).map((product) =>
     fetch(`http://localhost:3000/api/products/${product.id}`)
       .then((res) => res.json())
   );
 
+  filteredProducts = []; //Declare filteredProducts variable outside of Promise.all callback in order to create an array to hold the filtered products
+  Object.values(groupedProducts).forEach((product) => {
+    if (product.quantity > 0) {
+      filteredProducts.push(product);
+    }
+  });
+
+  // Update the total quantity element
+  calculateTotalQuantity(filteredProducts);
+
   // Wait for all fetches to complete before rendering the cart items
   Promise.all(productFetches)
     .then((data) => {
+      //Filter out deleted items
+      filteredProducts = Object.values(groupedProducts).filter((product) => product.quantity > 0);
       // Iterate through products and add them to the cart, (...if they have a quantity greater than 0 to exclude the ungrouped product remaining after grouping was done)
+      console.log(filteredProducts)
       Object.values(groupedProducts).forEach((product, index) => {
+        const key = `${product.id}-${product.color}`;
+        if (!key) {
+          return; //Skip products with undefined keys
+        }
         if (product.quantity > 0) {
           const item = document.createElement("div");
           item.classList.add("cart__item");
           item.dataset.id = product.id;
           item.dataset.color = product.color;
+          const formattedPrice = data[index].price.toLocaleString(); // Format the price with commas
           item.innerHTML = `
             <div class="cart__item__img">
               <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
@@ -101,7 +119,7 @@ const renderCartItems = () => {
               <div class="cart__item__content__titlePrice">
                 <h2>${data[index].name}</h2>
                 <p>${product.color}</p>
-                <p>${data[index].price / 100}</p>
+                <p>€ ${formattedPrice}</p> <!-- Display the formatted price -->
               </div>
               <div class="cart__item__content__settings">
                 <div class="cart__item__content__settings__quantity">
@@ -115,61 +133,74 @@ const renderCartItems = () => {
             </div>
           `;
           cartContainer.appendChild(item);
-
-          // Add event listener to change quantity
-          const itemQuantity = item.querySelector(".itemQuantity");
-          itemQuantity.addEventListener("change", (event) => {
-            const newQuantity = Number(itemQuantity.value);
-            // Update the quantity in the groupedProducts object
-            groupedProducts[`${product.model}-${product.color}`].quantity = newQuantity;
-            // Update the quantity in the products array
-            products.forEach((product) => {
-              if (product.id === item.dataset.id && product.color === item.dataset.color) {
-                product.quantity = newQuantity;
-              }
-            });
-            // Update the total quantity element
-            totalQuantity.innerHTML = calculateTotalQuantity();
-            // Update the local storage
-            localStorage.setItem("addToCart", JSON.stringify(products));
-            // Calculate and display the total price
-            calculateTotalPrice();
-          });
-
-          // Add event listener to delete item
-          const deleteItem = item.querySelector(".deleteItem");
-          deleteItem.addEventListener("click", (event) => {
-            const deleteButton = event.target;
-            const product = deleteButton.closest('.cart__item');
-            if (product) {
-              const productId = product.getAttribute('data-id');
-              const productColor = product.getAttribute('data-color');
-              const index = products.findIndex((product) => product.id === productId && product.color === productColor);
-              products.splice(index, 1);
-              localStorage.setItem("addToCart", JSON.stringify(products));
-              renderCartItems();
-              calculateTotalPrice();
-            };
-          });
-
-          //Calls the `calculateTotalPrice` function to calculate and display the total price.
-          calculateTotalPrice();
         };
       });
+
+      // Delete item event listener
+      const deleteButtons = cartContainer.querySelectorAll(".deleteItem");
+      deleteButtons.forEach((deleteButton) => {
+        deleteButton.addEventListener("click", (event) => {
+          const deleteButton = event.target;
+          const item = deleteButton.closest('.cart__item');
+          if (item) {
+            const productId = item.getAttribute('data-id');
+            const productColor = item.getAttribute('data-color');
+            const index = products.findIndex((product) => product.id === productId && product.color === productColor);
+            if (index !== -1) {
+              products.splice(index, 1);
+              renderCartItems();
+              calculateTotalPrice(filteredProducts);
+              localStorage.setItem("addToCart", JSON.stringify(products));
+            }
+          }
+        });
+      });
+      // Add event listener to change quantity
+   // Add event listener to change quantity
+const itemQuantities = cartContainer.querySelectorAll(".itemQuantity");
+itemQuantities.forEach((itemQuantity) => {
+  itemQuantity.addEventListener("change", (event) => {
+    const newQuantity = Number(itemQuantity.value);
+    // Update the quantity in the groupedProducts object
+    const item = itemQuantity.closest('.cart__item');
+    const productId = item.getAttribute('data-id');
+    const productColor = item.getAttribute('data-color');
+    // Update the quantity in the groupedProducts object
+    groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
+    // Update the quantity in the filteredProducts array
+    const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
+    if (productIndex !== -1) {
+      filteredProducts[productIndex].quantity = newQuantity;
+    }
+    // Calculate and display the total quantity
+    calculateTotalQuantity(filteredProducts);
+    // Calculate and display the total price
+    calculateTotalPrice(filteredProducts);
+    // Update the local storage
+    localStorage.setItem("addToCart", JSON.stringify(products));
+  });
+});
+
     })
+
     .catch((error) => {
       console.error("Error fetching product data:", error);
     });
+  //Calls the `calculateTotalPrice` function to calculate and display the total price.
+  calculateTotalPrice(filteredProducts);
 };
 
+
 //PART 5: DEFINE THE `CALCULATETOTALQUANTITY` FUNCTION
-const calculateTotalQuantity = () => {
+const calculateTotalQuantity = (filteredProducts) => {
   let totalQuantity = 0;
   // Iterate through products and sum up the quantities
-  products.forEach((product) => {
+  filteredProducts.forEach((product) => {
     totalQuantity += product.quantity;
   });
-  return totalQuantity;
+  console.log(totalQuantity);
+  // Update the total quantity element
+  totalQuantityElement.innerHTML = totalQuantity;
 };
 
 //PART 6: DEFINE THE `CALCULATETOTALPRICE` FUNCTION
@@ -182,16 +213,18 @@ const calculateTotalPrice = () => {
   let total = 0;
 
   // Create an array to store the fetch promises
-  const productFetches = products.map((product) =>
+  const productFetches = filteredProducts.map((product) =>
     fetch(`http://localhost:3000/api/products/${product.id}`)
       .then((res) => res.json())
   );
+
   Promise.all(productFetches)
     .then((data) => {
       data.forEach((product, index) => {
-        total += product.price * products[index].quantity;
+        total += product.price * filteredProducts[index].quantity;
       });
-      totalPrice.innerText = `${(total / 100).toFixed(2)}`; // Format the total price with two decimal places
+      const formattedTotal = total.toLocaleString(); // Format the total price with commas
+      totalPrice.innerText = formattedTotal;
     })
     .catch((error) => {
       console.error("Error fetching product data:", error);
