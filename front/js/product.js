@@ -49,7 +49,8 @@ const getArticle = () => {
 
         // Update the price element with the product price, by USING THE FOLLOWING SINGLE LINE: 
         //const addPrice = (document.getElementById("price").innerHTML=data.price), OR the following SINGLE LINE:
-        document.getElementById("price").innerHTML=data.price
+        document.getElementById("price").innerHTML = parseFloat(data.price).toLocaleString();
+
         
         // Add an image element with the product image URL as the source
         const addImg = document.createElement("img")
