@@ -70,13 +70,13 @@ const getArticle = () => {
  * @type {HTMLElement}
  */
 const addToCart = document.getElementById("addToCart");
-
 /**
  * The click event listener for the "Add to Cart" button that adds the selected product to the cart.
  */
 addToCart.addEventListener("click", () => {
   // Get the selected color and quantity
   const selectedColor = document.getElementById("colors").value;
+  // Assigns the variable (a storage location that can hold a value, in this case with a value that remains 'constant' throughout the program execution) `quantity` to the result of the `parseInt` function, which retrieves the HTML element with the ID "quantity", calls the `getElementById` method on the `document` object, which represents the current HTML doc, and by passing "quantity" as the argument, selects the element with the ID "quantity"; once the element with "quantity" is selected, the .value property, which represents the current value entered into the input element, is accessed; finally, after taking a string of information from the HTML element with the ID "quantity" as input, it parses it to obtain an integer, whose value is passed as the argument to `parseInt`, ensuring that `quantity` contains an integer value rather than a string.
   const quantity = parseInt(document.getElementById("quantity").value);
 
   // Check if a color is selected
@@ -100,10 +100,19 @@ addToCart.addEventListener("click", () => {
     // If the key "addToCart" exists in local storage, parse the value to an array and assign it to addProductLocalStorage.
     addProductLocalStorage = JSON.parse(localStorage.getItem("addToCart"));
   }
+  // Add the selected product to the addProductLocalStorage array
   addProductLocalStorage.push(addProduct);
+
+  // Convert the addProductLocalStorage array to a JSON string and store it in the "addToCart" key of local storage
   localStorage.setItem("addToCart", JSON.stringify(addProductLocalStorage));
 
-  // Update the total quantity in the cart (assuming you have a cartTotalQuantity element)
+  // Reset color option to the default choice
+  document.getElementById("colors").selectedIndex = 0;
+
+  // Reset the number of articles to the default value
+  document.getElementById("quantity").value = 1;
+
+  // Update the total quantity in the cart 
   const cartTotalQuantity = document.getElementById("cartTotalQuantity");
   if (cartTotalQuantity) {
     const currentQuantity = parseInt(cartTotalQuantity.textContent);
@@ -112,8 +121,3 @@ addToCart.addEventListener("click", () => {
 });
 
 getArticle();
-
-
-
-
-

@@ -113,7 +113,9 @@ const renderCartItems = () => {
           const formattedPrice = data[index].price.toLocaleString(); // Format the price with commas
           item.innerHTML = `
             <div class="cart__item__img">
-              <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
+              <a href="./product.html?id=${product.id}">
+                <img src="${data[index].imageUrl}" alt="${data[index].altTxt}">
+              </a>
             </div>
             <div class="cart__item__content">
               <div class="cart__item__content__titlePrice">
@@ -145,49 +147,50 @@ const renderCartItems = () => {
           if (item) {
             const productId = item.getAttribute('data-id');
             const productColor = item.getAttribute('data-color');
-            const index = products.findIndex((product) => product.id === productId && product.color === productColor);
-            if (index !== -1) {
-              products.splice(index, 1);
-              renderCartItems();
-              calculateTotalPrice(filteredProducts);
-              localStorage.setItem("addToCart", JSON.stringify(products));
-            }
+
+            // Remove the item from products array
+            products = products.filter((product) => !(product.id === productId && product.color === productColor));
+
+            renderCartItems();
+            calculateTotalPrice(filteredProducts);
+            localStorage.setItem("addToCart", JSON.stringify(products));
           }
+        }
         });
-      });
-      // Add event listener to change quantity
-   // Add event listener to change quantity
-const itemQuantities = cartContainer.querySelectorAll(".itemQuantity");
-itemQuantities.forEach((itemQuantity) => {
-  itemQuantity.addEventListener("change", (event) => {
-    const newQuantity = Number(itemQuantity.value);
-    // Update the quantity in the groupedProducts object
-    const item = itemQuantity.closest('.cart__item');
-    const productId = item.getAttribute('data-id');
-    const productColor = item.getAttribute('data-color');
-    // Update the quantity in the groupedProducts object
-    groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
-    // Update the quantity in the filteredProducts array
-    const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
-    if (productIndex !== -1) {
-      filteredProducts[productIndex].quantity = newQuantity;
-    }
-    // Calculate and display the total quantity
-    calculateTotalQuantity(filteredProducts);
-    // Calculate and display the total price
-    calculateTotalPrice(filteredProducts);
-    // Update the local storage
-    localStorage.setItem("addToCart", JSON.stringify(products));
-  });
-});
-
-    })
-
-    .catch((error) => {
-      console.error("Error fetching product data:", error);
     });
-  //Calls the `calculateTotalPrice` function to calculate and display the total price.
-  calculateTotalPrice(filteredProducts);
+  // Add event listener to change quantity
+  // Add event listener to change quantity
+  const itemQuantities = cartContainer.querySelectorAll(".itemQuantity");
+  itemQuantities.forEach((itemQuantity) => {
+    itemQuantity.addEventListener("change", (event) => {
+      const newQuantity = Number(itemQuantity.value);
+      // Update the quantity in the groupedProducts object
+      const item = itemQuantity.closest('.cart__item');
+      const productId = item.getAttribute('data-id');
+      const productColor = item.getAttribute('data-color');
+      // Update the quantity in the groupedProducts object
+      groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
+      // Update the quantity in the filteredProducts array
+      const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
+      if (productIndex !== -1) {
+        filteredProducts[productIndex].quantity = newQuantity;
+      }
+      // Calculate and display the total quantity
+      calculateTotalQuantity(filteredProducts);
+      // Calculate and display the total price
+      calculateTotalPrice(filteredProducts);
+      // Update the local storage
+      localStorage.setItem("addToCart", JSON.stringify(products));
+    });
+  });
+
+})
+
+    .catch ((error) => {
+  console.error("Error fetching product data:", error);
+});
+//Calls the `calculateTotalPrice` function to calculate and display the total price.
+calculateTotalPrice(filteredProducts);
 };
 
 
