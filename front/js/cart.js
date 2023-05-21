@@ -29,7 +29,7 @@ if (typeof localStorage !== 'undefined') {
     products = JSON.parse(cartData)
     console.log(products)
   }
-};
+}
 
 //PART 3: RETRIEVAL OF DOM ELEMENTS (CARTCONTAINER, TOTALPRICE) IF DOCUMENT IS DEFINED
 if (typeof document !== 'undefined') {
@@ -42,7 +42,7 @@ if (typeof document !== 'undefined') {
   //Retrieves/Gets the DOM element with the ID "totalQuantity" and assigns it to the `totalQuantity` variable.
   totalQuantityElement = document.getElementById("totalQuantity");
   console.log(totalQuantityElement);
-};
+}
 
 //PART 4: DEFINE THE `RENDERCARTITEMS` FUNCTION
 /**
@@ -83,7 +83,6 @@ const renderCartItems = () => {
       .then((res) => res.json())
   );
 
-  filteredProducts = []; //Declare filteredProducts variable outside of Promise.all callback in order to create an array to hold the filtered products
   Object.values(groupedProducts).forEach((product) => {
     if (product.quantity > 0) {
       filteredProducts.push(product);
@@ -92,6 +91,8 @@ const renderCartItems = () => {
 
   // Update the total quantity element
   calculateTotalQuantity(filteredProducts);
+  // Calculate and display the total price
+  calculateTotalPrice(filteredProducts);
 
   // Wait for all fetches to complete before rendering the cart items
   Promise.all(productFetches)
@@ -100,6 +101,7 @@ const renderCartItems = () => {
       filteredProducts = Object.values(groupedProducts).filter((product) => product.quantity > 0);
       // Iterate through products and add them to the cart, (...if they have a quantity greater than 0 to exclude the ungrouped product remaining after grouping was done)
       console.log(filteredProducts)
+
       Object.values(groupedProducts).forEach((product, index) => {
         const key = `${product.id}-${product.color}`;
         if (!key) {
@@ -151,46 +153,45 @@ const renderCartItems = () => {
             // Remove the item from products array
             products = products.filter((product) => !(product.id === productId && product.color === productColor));
 
-            renderCartItems();
+            item.remove();
+
+            // Update the filteredProducts array
+            filteredProducts = filteredProducts.filter((product) => !(product.id === productId && product.color === productColor));
+
             calculateTotalPrice(filteredProducts);
-            localStorage.setItem("addToCart", JSON.stringify(products));
+            calculateTotalQuantity(filteredProducts);
+            localStorage.setItem("addToCart", JSON.stringify(filteredProducts));
           }
-        }
         });
-    });
-  // Add event listener to change quantity
-  // Add event listener to change quantity
-  const itemQuantities = cartContainer.querySelectorAll(".itemQuantity");
-  itemQuantities.forEach((itemQuantity) => {
-    itemQuantity.addEventListener("change", (event) => {
-      const newQuantity = Number(itemQuantity.value);
-      // Update the quantity in the groupedProducts object
-      const item = itemQuantity.closest('.cart__item');
-      const productId = item.getAttribute('data-id');
-      const productColor = item.getAttribute('data-color');
-      // Update the quantity in the groupedProducts object
-      groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
-      // Update the quantity in the filteredProducts array
-      const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
-      if (productIndex !== -1) {
-        filteredProducts[productIndex].quantity = newQuantity;
-      }
-      // Calculate and display the total quantity
-      calculateTotalQuantity(filteredProducts);
-      // Calculate and display the total price
-      calculateTotalPrice(filteredProducts);
-      // Update the local storage
-      localStorage.setItem("addToCart", JSON.stringify(products));
-    });
-  });
+      });
+      // Add event listener to change quantity
+      const itemQuantities = cartContainer.querySelectorAll(".itemQuantity");
+      itemQuantities.forEach((itemQuantity) => {
+        itemQuantity.addEventListener("change", (event) => {
+          const newQuantity = Number(itemQuantity.value);
+          // Update the quantity in the groupedProducts object
+          const item = itemQuantity.closest('.cart__item');
+          const productId = item.getAttribute('data-id');
+          const productColor = item.getAttribute('data-color');
+          // Update the quantity in the groupedProducts object
+          groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
+          // Update the quantity in the filteredProducts array
+          const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
+          if (productIndex !== -1) {
+            filteredProducts[productIndex].quantity = newQuantity;
+          }
+          // Update the local storage
+          localStorage.setItem("addToCart", JSON.stringify(filteredProducts));
+          // Update the total price
+          calculateTotalPrice(filteredProducts);
+          calculateTotalQuantity(filteredProducts);
+        });
+      });
 
-})
-
-    .catch ((error) => {
-  console.error("Error fetching product data:", error);
-});
-//Calls the `calculateTotalPrice` function to calculate and display the total price.
-calculateTotalPrice(filteredProducts);
+    })
+    .catch((error) => {
+      console.error("Error fetching product data:", error);
+    });
 };
 
 
@@ -212,7 +213,7 @@ const calculateTotalQuantity = (filteredProducts) => {
  * @function calculateTotalPrice
  * @returns {void}
  */
-const calculateTotalPrice = () => {
+const calculateTotalPrice = (filteredProducts) => {
   let total = 0;
 
   // Create an array to store the fetch promises
