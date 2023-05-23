@@ -4,9 +4,9 @@ const orderId = localStorage.getItem('orderId');
 // Display the order ID on the confirmation page
 document.getElementById('orderId').innerText = orderId;
 
-// Get the order details from the server
+// Retrieve order details from the server
 const urlParams = new URLSearchParams(window.location.search);
-const orderIdParam = urlParams.get('orderId');
+const orderId = urlParams.get('orderId');
 
 fetch(`http://localhost:3000/api/products/order/${orderId}`)
   .then((response) => {

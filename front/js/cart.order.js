@@ -1,9 +1,9 @@
-// Validate and style the input fields
+// PART 1: VALIDATE ORDER FORM INPUT FIELDS (helps ensure data integrity and accuracy)
 function validateInput(input, regex, errorMessage) {
     if (input.value.match(regex)) {
         input.style.backgroundColor = 'lightgreen';
         input.style.borderColor = '#ccc';
-        input.setCustomValidity('');
+        input.setCustomValidity(' ');
     } else {
         input.style.backgroundColor = 'pink';
         input.style.borderColor = 'red';
@@ -51,39 +51,51 @@ emailInput.addEventListener("change", (event) => {
     validateInput(emailInput, emailRegex, emailErrorMessage);
 });
 
+// PART 2: GENERATE A UNIQUE ORDER ID (gives you a unique identifier for the order)
+
+// Function to generate a unique order ID
+function generateOrderId() {
+    //Generate a random number and append a timestamp to it
+    const randomNum = Math.floor(Math.random() * 1000000);
+    const timestamp = Date.now();
+    return 'ORDER${randomNum}${timestamp}';
+};
+
+// Generate a unique order ID 
+const orderId = generateOrderId();
+
+// PART 3: CREATE THE ORDER OBJECT (an object called `order` that includes the order ID, contact info from the form inputs, and the cart items retrieved from the server; represents the complete order with all the necessary details)
+
+// Get the contact information from the form inputs
+const firstName = document.getElementById('firstName').value;
+const lastName = document.getElementById('lastName').value;
+const address = document.getElementById('address').value;
+const city = document.getElementById('city').value;
+const email = document.getElementById('email').value;
+
+// Create an object to store the contact information
+const contact = {
+    firstName: firstName,
+    lastName: lastName,
+    address: address,
+    city: city,
+    email: email
+};
+
+// Create the order object
+const order = {
+    contact: contact,
+    products: products,
+    orderId: orderId
+};
+
+// PART 4: SUBMIT THE ORDER AND HANDLE THE RESPONSE (send the order object to the server for processing using a POST request, which includes the order details in the request body, preferably in JSON format)
+
 // Add an event listener to the form submission
 document.querySelector('.cart__order__form').addEventListener('submit', function (event) {
+
     //Prevent the default form submission behavior
-    event.preventDefault();
-
-    // Get the contact information from the form inputs
-    const firstName = document.getElementById('firstName').value;
-    const lastName = document.getElementById('lastName').value;
-    const address = document.getElementById('address').value;
-    const city = document.getElementById('city').value;
-    const email = document.getElementById('email').value;
-
-    // Create an object to store the contact information
-    const contact = {
-        firstName: firstName,
-        lastName: lastName,
-        address: address,
-        city: city,
-        email: email
-    };
-
-    // Retrieve cart items from localStorage
-    const cartItems = JSON.parse(localStorage.getItem('addToCart')); // Retrieve cart items from localStorage
-   
-    // Generate a unique order ID 
-    const orderId = generateOrderId();
-
-    // Create the order object
-    const order = {
-        orderId: orderId,
-        contact: contact,
-        items: cartItems
-    };
+    event.preventDefault()
 
     // Send the form data to the server
     fetch("http://localhost:3000/api/products/order", {
@@ -98,18 +110,20 @@ document.querySelector('.cart__order__form').addEventListener('submit', function
                 return response.json();
             } else {
                 throw new Error("Network response was not ok");
-            }
+            };
         })
+
+        // HANDLE THE ORDER SUBMISSION RESPONSE 
         .then((data) => {
             // Order successfully submitted
             console.log('Order submitted:', data);
+
             // Clear the cart items from localStorage
             localStorage.removeItem('addToCart');
 
-
             // Handle the response data
             const orderID = data.orderId; // Use the actual order ID returned from the server
-            localStorage.setItem("orderID", orderID);
+            localStorage.setItem("orderID", orderId);
 
             // Show confirmation message and redirect
             const confirmationMessage = "Your order has been successfully submitted!";
@@ -122,11 +136,3 @@ document.querySelector('.cart__order__form').addEventListener('submit', function
             alert('Error submitting order. Please try again.');
         });
 });
-
-// Function to generate a unique order ID
-function generateOrderId() {
-    //Generate a random number and append a timestamp to it
-    const randomNum = Math.floor(Math.random() * 1000000);
-    const timestamp = Date.now();
-    return 'ORDER${randomNum}${timestamp}';
-}
