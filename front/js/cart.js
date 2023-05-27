@@ -1,4 +1,4 @@
-//PART 1: DECLARATION OF VARIABLES AND CONSTANTS (PRODUCTS, CARTCONTAINER, TOTALPRICE)
+//PART 1: DECLARATION OF VARIABLES AND CONSTANTS (declares and initializes the variables used in the script)
 /**
  * The array of products in the shopping cart.
  * @type {Array<{quantity: string, color: string, id: string}>}
@@ -19,7 +19,7 @@ let totalPrice;
 let totalQuantityElement; //Rename the global variable to avoid confusion
 let filteredProducts = []; // Declare filteredProducts at the global
 
-//PART 2: RETRIEVAL OF CART DATA FROM LOCAL STORAGE AND PARSING IT AS JSON
+//PART 2: RETRIEVAL OF CART DATA FROM LOCAL STORAGE AND PARSING IT AS JSON (Checks if `localStorage` is available, retrieves cart data from the `localStorage` using the key "addToCart", and parses the retrieved cart data as JSON and assigns it to the `products` variable)
 if (typeof localStorage !== 'undefined') {
   //Retrieves the cart daata from the `localStorage` using the key "addToCart" and assigns it to the `cartData` variable.
   const cartData = localStorage.getItem("addToCart");
@@ -31,7 +31,7 @@ if (typeof localStorage !== 'undefined') {
   }
 }
 
-//PART 3: RETRIEVAL OF DOM ELEMENTS (CARTCONTAINER, TOTALPRICE) IF DOCUMENT IS DEFINED
+//PART 3: RETRIEVAL OF DOM ELEMENTS (Checks if the `document` object is available, and if so retrieves the necessary DOM elements using their IDs and assigns them to the corresponding variables.
 if (typeof document !== 'undefined') {
   //Retrieves/Gets the DOM element with the ID "cart__items" and assigns it to the `cartContainer` variable.
   cartContainer = document.getElementById("cart__items");
@@ -44,7 +44,48 @@ if (typeof document !== 'undefined') {
   console.log(totalQuantityElement);
 }
 
-//PART 4: DEFINE THE `RENDERCARTITEMS` FUNCTION
+//PART 4: DEFINE THE `CALCULATETOTALQUANTITY` FUNCTION (Used to calculate the total quantity of products in the cart, and update the total quantity element with the calculated value)
+const calculateTotalQuantity = (filteredProducts) => {
+  let totalQuantity = 0;
+  // Iterate through products and sum up the quantities
+  filteredProducts.forEach((product) => {
+    totalQuantity += product.quantity;
+  });
+  console.log(totalQuantity);
+  // Update the total quantity element
+  totalQuantityElement.innerHTML = totalQuantity;
+};
+
+//PART 5: DEFINE THE `CALCULATETOTALPRICE` FUNCTION (Used to calculate the total price of the products in the cart, fetch the necessary product data using the product IDs, calculate the total price by multiplying the product price with the quantity, and update the total price element with the calculated value)
+/**
+ * Calculates and displays the total price.
+ * @function calculateTotalPrice
+ * @returns {void}
+ */
+const calculateTotalPrice = (filteredProducts) => {
+  let total = 0;
+
+  // Create an array to store the fetch promises
+  const productFetches = filteredProducts.map((product) =>
+    fetch(`http://localhost:3000/api/products/${product.id}`)
+      .then((res) => res.json())
+  );
+
+  Promise.all(productFetches)
+    .then((data) => {
+      data.forEach((product, index) => {
+        total += product.price * filteredProducts[index].quantity;
+      });
+      const formattedTotal = total.toLocaleString(); // Format the total price with commas
+      totalPrice.innerText = formattedTotal;
+    })
+    // The catch() method will always get called whenever an error is encountered at any point along the promise chain:
+    .catch((error) => {
+      console.error("Error fetching product data:", error);
+    });
+};
+
+//PART 6: DEFINE THE `RENDERCARTITEMS` FUNCTION (Creates an object to store the grouped products, iterates through the products and groups by model and color, calculates the cart's total quantity, clears the content of the cart container, fetches the product data for each grouped product, iterates through the grouped products and adds them to the cart container, adds event listeners for delete buttons and quantity changes, updates the filteredProducts array and localStorage, then invokes the `calculateTotalPrice` and `calculateTotalQuantity functions)
 /**
  * Renders the shopping cart items.
  * @function renderCartItems
@@ -94,13 +135,10 @@ const renderCartItems = () => {
   // Calculate and display the total price
   calculateTotalPrice(filteredProducts);
 
-  // Wait for all fetches to complete before rendering the cart items
+  // Wait for all fetches to complete before rendering the cart items using a 'Promise, then, catch' block
   Promise.all(productFetches)
     .then((data) => {
-      //Filter out deleted items
-      filteredProducts = Object.values(groupedProducts).filter((product) => product.quantity > 0);
-      // Iterate through products and add them to the cart, (...if they have a quantity greater than 0 to exclude the ungrouped product remaining after grouping was done)
-      console.log(filteredProducts)
+     
 
       Object.values(groupedProducts).forEach((product, index) => {
         const key = `${product.id}-${product.color}`;
@@ -136,6 +174,10 @@ const renderCartItems = () => {
               </div>
             </div>
           `;
+           //Filter out items left over with no numerical value after grouping into separate colors
+      filteredProducts = Object.values(groupedProducts).filter((product) => product.quantity > 0);
+      // Iterate through products and add them to the cart, (...if they have a quantity greater than 0 to exclude the ungrouped product remaining after grouping was done)
+      console.log(filteredProducts)
           cartContainer.appendChild(item);
         };
       });
@@ -173,15 +215,19 @@ const renderCartItems = () => {
           const item = itemQuantity.closest('.cart__item');
           const productId = item.getAttribute('data-id');
           const productColor = item.getAttribute('data-color');
+
           // Update the quantity in the groupedProducts object
           groupedProducts[`${productId}-${productColor}`].quantity = newQuantity;
+
           // Update the quantity in the filteredProducts array
           const productIndex = filteredProducts.findIndex((product) => product.id === productId && product.color === productColor);
           if (productIndex !== -1) {
             filteredProducts[productIndex].quantity = newQuantity;
           }
+
           // Update the local storage
           localStorage.setItem("addToCart", JSON.stringify(filteredProducts));
+
           // Update the total price
           calculateTotalPrice(filteredProducts);
           calculateTotalQuantity(filteredProducts);
@@ -194,46 +240,5 @@ const renderCartItems = () => {
     });
 };
 
-
-//PART 5: DEFINE THE `CALCULATETOTALQUANTITY` FUNCTION
-const calculateTotalQuantity = (filteredProducts) => {
-  let totalQuantity = 0;
-  // Iterate through products and sum up the quantities
-  filteredProducts.forEach((product) => {
-    totalQuantity += product.quantity;
-  });
-  console.log(totalQuantity);
-  // Update the total quantity element
-  totalQuantityElement.innerHTML = totalQuantity;
-};
-
-//PART 6: DEFINE THE `CALCULATETOTALPRICE` FUNCTION
-/**
- * Calculates and displays the total price.
- * @function calculateTotalPrice
- * @returns {void}
- */
-const calculateTotalPrice = (filteredProducts) => {
-  let total = 0;
-
-  // Create an array to store the fetch promises
-  const productFetches = filteredProducts.map((product) =>
-    fetch(`http://localhost:3000/api/products/${product.id}`)
-      .then((res) => res.json())
-  );
-
-  Promise.all(productFetches)
-    .then((data) => {
-      data.forEach((product, index) => {
-        total += product.price * filteredProducts[index].quantity;
-      });
-      const formattedTotal = total.toLocaleString(); // Format the total price with commas
-      totalPrice.innerText = formattedTotal;
-    })
-    .catch((error) => {
-      console.error("Error fetching product data:", error);
-    });
-};
 //PART 7: INVOCATION OF `RENDERCARTITEMS` FUNCTION TO RENDER THE CART ITEMS ON THE PAGE
-//Calls the `renderCartItems` function to render the cart items on the page.
 renderCartItems();

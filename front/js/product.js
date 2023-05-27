@@ -1,3 +1,4 @@
+// PART 1: PARSING URL PARAMETERS - RETRIEVE PRODUCT ID FROM THE URL (Retrieves the product ID from the query string in the URL)
 /**
  * URLSearchParams interface provides utility methods to work with the query string of a URL.
  * @external URLSearchParams
@@ -16,6 +17,7 @@ const params = new URL(document.location).searchParams;
  */
 const id = params.get("id");
 
+// PART 2: FETCH PRODUCT DATA  (Fetches the product data from the API using the product ID)
 /**
  * The URL to fetch the product data from.
  * @type {string}
@@ -27,7 +29,6 @@ const url = `http://localhost:3000/api/products/${id}`;
  * @type {HTMLElement}
  */
 const container = document.getElementById("items");
-
 
 /**
  * Fetches the product with the specified ID and updates the product page with the details.
@@ -42,6 +43,8 @@ const getArticle = () => {
     })
     .then(function (data) {
       console.log(data);
+
+      // PART 3: UPDATE PRODUCT PAGE (and updates the product page with the details))
 
       // Update the title element with the product name
       document.getElementById("title").innerHTML = data.name;
@@ -64,7 +67,7 @@ const getArticle = () => {
       }
     });
 };
-
+// PART 4: ADD PRODUCT TO THE CART (Adds the selected product with it's details to the cart and updates it to the localStorage)
 /**
  * The DOM element that represents the "Add to Cart" button.
  * @type {HTMLElement}
@@ -85,7 +88,7 @@ addToCart.addEventListener("click", () => {
     return;
   }
 
-  // Create an object that represents the product to be added to the cart
+  // Create an object that represents the product (minus the price point) to be added to the cart
   const addProduct = {
     color: selectedColor,
     quantity: quantity,
@@ -94,17 +97,20 @@ addToCart.addEventListener("click", () => {
 
   alert("Your item has been added to the cart! When you are ready to purchase your order, click on the Cart tab above.");
 
-  // Store the selected product with its details to the local storage
+  // Store the selected product with its details in the local storage
   let addProductLocalStorage = [];
+
   if (localStorage.getItem("addToCart") !== null) {
     // If the key "addToCart" exists in local storage, parse the value to an array and assign it to addProductLocalStorage.
     addProductLocalStorage = JSON.parse(localStorage.getItem("addToCart"));
   }
-  // Add the selected product to the addProductLocalStorage array
+  // Add the selected product (object from above) to the addProductLocalStorage array
   addProductLocalStorage.push(addProduct);
 
   // Convert the addProductLocalStorage array to a JSON string and store it in the "addToCart" key of local storage
   localStorage.setItem("addToCart", JSON.stringify(addProductLocalStorage));
+
+  // PART 5: RESET COLOR AND QUANTITY SELECTION (Resets the color and quantity selection to their default values after adding the product to the cart)
 
   // Reset color option to the default choice
   document.getElementById("colors").selectedIndex = 0;
@@ -112,12 +118,13 @@ addToCart.addEventListener("click", () => {
   // Reset the number of articles to the default value
   document.getElementById("quantity").value = 1;
 
-  // Update the total quantity in the cart 
+  // PART 6: UPDATE THE TOTAL QUANTITY IN THE CART (UpdateS the total quantity in the cart after adding a product) 
+ 
   const cartTotalQuantity = document.getElementById("cartTotalQuantity");
   if (cartTotalQuantity) {
     const currentQuantity = parseInt(cartTotalQuantity.textContent);
     cartTotalQuantity.textContent = currentQuantity + quantity;
   }
 });
-
+// PART 7: FETCH PRODUCT DETAILS AND UPDATE PAGE (Fetches the product data and updates the product page with the details)
 getArticle();
