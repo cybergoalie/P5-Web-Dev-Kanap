@@ -36,6 +36,7 @@ const container = document.getElementById("items");
  * @returns {void}
  */
 const getArticle = () => {
+
   // Fetch the product data from the API
   fetch(url)
     .then(function (res) {
@@ -67,6 +68,7 @@ const getArticle = () => {
       }
     });
 };
+
 // PART 4: ADD PRODUCT TO THE CART (Adds the selected product with it's details to the cart and updates it to the localStorage)
 /**
  * The DOM element that represents the "Add to Cart" button.
@@ -77,9 +79,11 @@ const addToCart = document.getElementById("addToCart");
  * The click event listener for the "Add to Cart" button that adds the selected product to the cart.
  */
 addToCart.addEventListener("click", () => {
+  
   // Get the selected color and quantity
   const selectedColor = document.getElementById("colors").value;
-  // Assigns the variable (a storage location that can hold a value, in this case with a value that remains 'constant' throughout the program execution) `quantity` to the result of the `parseInt` function, which retrieves the HTML element with the ID "quantity", calls the `getElementById` method on the `document` object, which represents the current HTML doc, and by passing "quantity" as the argument, selects the element with the ID "quantity"; once the element with "quantity" is selected, the .value property, which represents the current value entered into the input element, is accessed; finally, after taking a string of information from the HTML element with the ID "quantity" as input, it parses it to obtain an integer, whose value is passed as the argument to `parseInt`, ensuring that `quantity` contains an integer value rather than a string.
+
+  // Assigns the variable `quantity` to the result of the `parseInt` function, which retrieves the HTML element with the ID "quantity", calls the `getElementById` method on the `document` object, which represents the current HTML doc, and by passing "quantity" as the argument, selects the element with the ID "quantity"; once the element with "quantity" is selected, the .value property, which represents the current value entered into the input element, is accessed; finally, after taking a string of information from the HTML element with the ID "quantity" as input, it parses it to obtain an integer, whose value is passed as the argument to `parseInt`, ensuring that `quantity` contains an integer value rather than a string.
   const quantity = parseInt(document.getElementById("quantity").value);
 
   // Check if a color is selected
