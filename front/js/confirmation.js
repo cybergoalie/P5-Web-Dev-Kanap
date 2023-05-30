@@ -4,4 +4,3 @@ const orderId = urlParams.get('orderID');
 
 // Display the order ID on the confirmation page
 document.getElementById('orderId').innerText = orderId;
-

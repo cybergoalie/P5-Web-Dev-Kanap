@@ -53,19 +53,17 @@ emailInput.addEventListener("change", (event) => {
 
 
 
-// PART 3: CREATE THE ORDER OBJECT (an object called `order` that includes the order ID, contact info from the form inputs, and the cart items retrieved from the server; represents the complete order with all the necessary details)
 
-
-
-
-
-// PART 4: SUBMIT THE ORDER AND HANDLE THE RESPONSE (send the order object to the server for processing using a POST request, which includes the order details in the request body, preferably in JSON format)
+// PART 2: SUBMIT THE ORDER AND HANDLE THE RESPONSE (send the order object to the server for processing using a POST request, which includes the order details in the request body, preferably in JSON format)
 
 // Add an event listener to the form submission
 document.getElementById("order").addEventListener('click', function (event) {
 
     //Prevent the default form submission behavior
     event.preventDefault()
+
+    // CREATE THE ORDER OBJECT (an object called `order` that includes the contact info from the form inputs, and the cart items retrieved from the server; represents the complete order with all the necessary details)
+
     // Get the contact information from the form inputs
     const firstName = document.getElementById('firstName').value;
     const lastName = document.getElementById('lastName').value;
@@ -82,10 +80,12 @@ document.getElementById("order").addEventListener('click', function (event) {
         email: email
     };
 
+    // APPLY THE TRANSFORMATION FUNCTION AKA ARROW FUNCTION (cartItem => cartItem.id) TO TAKE A cartItem AS INPUT AND RETURNS ITS ID PROPERTY... SO THAT, FOR EACH cartItem IN THE PRODUCTS ARRAY, THE MAP() FUNCTION WILL EXTRACT ITS ID AND STORE IT IN THE productIds ARRAY...
+
     const productIds = products.map(cartItem => cartItem.id);
 
 
-    // Create the order object
+    // Create the actual order object
     const order = {
         contact: contact,
         products: productIds
