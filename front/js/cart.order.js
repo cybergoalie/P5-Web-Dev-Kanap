@@ -1,13 +1,25 @@
 // PART 1: VALIDATE ORDER FORM INPUT FIELDS (helps ensure data integrity and accuracy)
 function validateInput(input, regex, errorMessage) {
+    const errorElementId = input.id + "Error";
+    let errorElement = document.getElementById(errorElementId);
+    if (!errorElement) {
+        errorElement = document.createElement("span")
+        errorElement.id = errorElementId;
+        errorElement.className = "error";
+        input.parentNode.insertBefore(errorElement, input.nextSibling);
+    }
+
     if (input.value.match(regex)) {
-        input.style.backgroundColor = 'lightgreen';
-        input.style.borderColor = '#ccc';
+        input.style.backgroundColor = 'lightgreen'; // CSS color value: light shade of green
+        input.style.border = '1px solid rgb(22 149 43)';
         input.setCustomValidity(' ');
+        errorElement.textContent = ''; // Clear the error message
     } else {
         input.style.backgroundColor = 'pink';
-        input.style.borderColor = 'red';
+        input.style.border = '1px solid #8d4343';
         input.setCustomValidity(errorMessage);
+        errorElement.textContent = errorMessage; // Display the error Message
+        errorElement.style.fontSize = '14px'; // Adjust the font size of the Error Message
     }
 }
 
@@ -15,6 +27,7 @@ function validateInput(input, regex, errorMessage) {
 const firstNameInput = document.getElementById('firstName');
 const firstNameRegex = /^[a-zA-Z ]{2,30}$/;
 const firstNameErrorMessage = 'Please enter a valid first name (2-30 alphabetic characters)';
+
 firstNameInput.addEventListener("change", (event) => {
     validateInput(firstNameInput, firstNameRegex, firstNameErrorMessage);
 });
@@ -23,6 +36,7 @@ firstNameInput.addEventListener("change", (event) => {
 const lastNameInput = document.getElementById('lastName');
 const lastNameRegex = /^[a-zA-Z ]{2,30}$/;
 const lastNameErrorMessage = 'Please enter a valid last name (2-30 alphabetic characters)';
+
 lastNameInput.addEventListener("change", (event) => {
     validateInput(lastNameInput, lastNameRegex, lastNameErrorMessage);
 });
@@ -31,6 +45,7 @@ lastNameInput.addEventListener("change", (event) => {
 const addressInput = document.getElementById('address');
 const addressRegex = /^[a-zA-Z0-9 ]{5,50}$/;
 const addressErrorMessage = 'Please enter a valid address (5-50 alphanumeric characters)';
+
 addressInput.addEventListener("change", (event) => {
     validateInput(addressInput, addressRegex, addressErrorMessage);
 });
@@ -39,6 +54,7 @@ addressInput.addEventListener("change", (event) => {
 const cityInput = document.getElementById('city');
 const cityRegex = /^[a-zA-Z ]{2,30}$/;
 const cityErrorMessage = 'Please enter a valid city name (2-30 alphabetic characters)';
+
 cityInput.addEventListener("change", (event) => {
     validateInput(cityInput, cityRegex, cityErrorMessage);
 });
@@ -118,9 +134,13 @@ document.getElementById("order").addEventListener('click', function (event) {
             // Handle the response data
             const orderID = data.orderId; // Use the actual order ID returned from the server
             console.log(orderID);
-            // Show confirmation message and redirect
+            // Show confirmation message in a window popup
             const confirmationMessage = "Your order has been successfully submitted!";
-            window.location.href = `./confirmation.html?orderID=${orderID}&message=${confirmationMessage}`;
+            window.alert(confirmationMessage);
+            
+            // Redirect to the confirmation page
+            window.location.href = `./confirmation.html?orderID=${orderID}#orderId`;
+
         })
         .catch((error) => {
             // Error submitting the order
